@@ -1,3 +1,12 @@
+export type User = {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+  password: string;
+  created_at: string;
+};
+
 export type Character = {
   id: number;
   name: string;
@@ -7,15 +16,6 @@ export type Character = {
   creator_id: number;
   created_at: string;
   updated_at: string;
-};
-
-export type User = {
-  id: number;
-  username: string;
-  name: string;
-  email: string;
-  password: string;
-  created_at: string;
 };
 
 export type Conversation = {
