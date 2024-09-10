@@ -11,7 +11,10 @@ const CharacterPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]); // State to store messages
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newMessage, setNewMessage] = useState<string>(""); // State for new message input
+  const [newMessage, setNewMessage] = useState<string>("");
+  const [selectedConversationId, setSelectedConversationId] = useState<
+    number | null
+  >(null);
 
   const navigate = useNavigate();
 
@@ -48,24 +51,113 @@ const CharacterPage: React.FC = () => {
     fetchConversations();
   }, [characterId]);
 
+  const getAIResponse = async (currentConversationId: string) => {
+    console.log(
+      "Getting AI response. Here is the selectedConversationId:",
+      currentConversationId
+    );
+    try {
+      const response = await api.post("/chat", {
+        conversation_id: currentConversationId,
+      });
+      return response.data.ai_message;
+    } catch (err) {
+      console.error("Failed to get AI response");
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!newMessage) return;
 
-    // Send message to API (replace `conversationId` with actual conversation ID)
+    const updatedMessage = newMessage.trim();
+    setNewMessage("");
+
+    setLoading(true);
+
+    let currentConversationId;
+    if (!selectedConversationId) {
+      console.log("Creating new conversation");
+      try {
+        const response = await api.post("/conversations", {
+          user_id: "6e7ef93a-20a6-4a9c-8521-1269f8b8d571",
+          character_id: characterId,
+          title: "New Conversation",
+        });
+        console.log("Conversation created", response.data);
+        conversations.push(response.data);
+        setSelectedConversationId(response.data.conversation.id);
+        currentConversationId = response.data.conversation.id;
+        console.log("Selected conversation ID set:", currentConversationId);
+        setMessages([
+          ...messages,
+          {
+            id: messages.length + 1,
+            role: "user",
+            content: updatedMessage,
+            conversation_id: currentConversationId,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+      } catch (err) {
+        console.error("Failed to create conversation");
+        setLoading(false);
+        return;
+      }
+    } else {
+      setMessages([
+        ...messages,
+        {
+          id: messages.length + 1,
+          role: "user",
+          content: updatedMessage,
+          conversation_id: selectedConversationId,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+    }
+
+    // Send message to API
     try {
-      const conversationId = conversations[0].id; // Assuming using the first conversation for now
+      // Assuming using the first conversation for now
+      if (selectedConversationId) {
+        currentConversationId = selectedConversationId;
+      }
+
+      console.log(
+        "Sending message to API, selectedConversationId:",
+        currentConversationId
+      );
+
       const response = await api.post("/messages", {
-        conversation_id: conversationId,
+        conversation_id: currentConversationId,
         role: "user", // Assuming user is sending the message
-        content: newMessage,
+        content: updatedMessage,
       });
 
-      // Add the new message to the message list
-      setMessages([...messages, response.data]);
-      setNewMessage(""); // Clear input
+      console.log(response.data);
+
+      // Clear input
     } catch (err) {
       console.error("Failed to send message");
     }
+
+    const aiResponse = await getAIResponse(currentConversationId);
+
+    console.log("AI response:", aiResponse);
+    if (aiResponse) {
+      setMessages([
+        ...messages,
+        {
+          id: messages.length + 1,
+          role: "assistant",
+          content: aiResponse,
+          conversation_id: currentConversationId,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+    }
+
+    setLoading(false);
   };
 
   if (loading) return <p>Loading conversations...</p>;
@@ -104,21 +196,38 @@ const CharacterPage: React.FC = () => {
 
       {/* Chat Interface */}
       <div className="flex flex-col flex-1">
-        <h2 className="text-xl p-4 font-bold mb-4">
-          Chat with Character {characterId}
-        </h2>
+        <div className="flex w-full justify-between items-center">
+          <h2 className="text-xl p-4 font-bold mb-4">
+            Chat with Character {characterId}
+          </h2>
+          <button onClick={() => navigate("/")} className="p-4 mr-2">
+            <p className="rounded-full bg-gray-200 p-2">SD</p>
+          </button>
+        </div>
 
         {/* Messages List */}
         <div className="flex flex-col flex-1 mb-4 p-4 h-64 overflow-y-scroll">
           {messages.map((message) => (
-            <div key={message.id} className="mb-2">
-              <p
-                className={`text-sm ${
-                  message.role === "user" ? "text-blue-500" : "text-green-500"
+            <div
+              key={message.id}
+              className={`flex my-2 w-full ${
+                message.role === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={` px-4 py-3 rounded-lg max-w-3/4 ${
+                  message.role === "user"
+                    ? "text-end bg-gray-200"
+                    : "text-start bg-slate-700 text-white"
                 }`}
               >
-                {message.role}: {message.content}
-              </p>
+                <p
+                  className={`
+                  }`}
+                >
+                  {message.content}
+                </p>
+              </div>
             </div>
           ))}
         </div>
