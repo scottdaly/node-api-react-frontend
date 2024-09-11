@@ -1,14 +1,18 @@
 export type User = {
-  id: number;
+  id: string;
   username: string;
   name: string;
   email: string;
-  password: string;
+  password?: string; // Optional, as OAuth users won't have a password
   created_at: string;
+  google_id?: string; // For Google OAuth users
+  refresh_token?: string; // For storing refresh tokens
+  oauth_provider?: "google" | "local"; // To distinguish between OAuth and local users
+  last_login?: string; // Optional, to track user activity
 };
 
 export type Character = {
-  id: number;
+  id: string;
   name: string;
   description: string;
   image: string;
@@ -19,9 +23,9 @@ export type Character = {
 };
 
 export type Conversation = {
-  id: number;
+  id: string;
   user_id: number;
-  character_id: number;
+  character_id: string;
   title: string;
   message_count: number;
   last_message_content: string;
@@ -31,8 +35,8 @@ export type Conversation = {
 };
 
 export type Message = {
-  id: number;
-  conversation_id: number;
+  id: string;
+  conversation_id: string;
   role: string;
   content: string;
   created_at: string;
