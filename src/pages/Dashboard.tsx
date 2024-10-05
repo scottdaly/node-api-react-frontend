@@ -41,7 +41,14 @@ const Dashboard: React.FC = () => {
     <div className="max-w-4xl mx-auto p-8">
       <div className="flex flex-col gap-4 mb-8">
         <div className="flex justify-between">
-          <h1 className="text-2xl font-bold">Welcome, {user.name}!</h1>
+          <h1
+            className="text-4xl font-bold cursor-pointer"
+            onClick={() => {
+              navigate("/");
+            }}
+          >
+            Brand Name
+          </h1>
           <button
             onClick={handleLogout}
             className="border border-zinc-300 hover:bg-zinc-100 text-zinc-800 px-4 py-2 rounded-md transition-colors duration-300"
@@ -49,7 +56,7 @@ const Dashboard: React.FC = () => {
             Logout
           </button>
         </div>
-
+        <h2 className="text-xl font-bold">Welcome, {user.name}!</h2>
         <p>Email: {user.email}</p>
         <p>Username: {user.username}</p>
       </div>

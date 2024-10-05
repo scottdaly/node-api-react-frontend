@@ -247,17 +247,33 @@ const CharacterPage: React.FC = () => {
               <div
                 key={conversation.id}
                 onClick={() => setSelectedConversationId(conversation.id)}
-                className={`my-3 p-2 rounded-md flex justify-between items-center ${
+                className={`relative my-0.5 py-2 pl-2 pr-2 rounded-md flex justify-between items-center group ${
                   selectedConversationId === conversation.id
-                    ? "bg-zinc-300"
-                    : "hover:bg-zinc-300 cursor-pointer transition-all duration-300"
+                    ? "bg-zinc-200"
+                    : "hover:bg-zinc-200 cursor-pointer"
                 }`}
               >
-                <p className="font-semibold">{conversation.title}</p>
-                <div onClick={() => handleDeleteConversation(conversation.id)}>
+                <p className="font-semibold line-clamp-1 truncate">
+                  {conversation.title}
+                </p>
+                <div
+                  className={`absolute right-2 bg-gradient-to-r rounded-md from-transparent h-full w-12 group-hover:to-zinc-200 ${
+                    selectedConversationId === conversation.id
+                      ? "to-zinc-200"
+                      : "to-zinc-100"
+                  }`}
+                ></div>
+                <div
+                  onClick={() => handleDeleteConversation(conversation.id)}
+                  className={`absolute right-0 h-full top-0 bottom-0 pr-2 pl-8 bg-gradient-to-l from-zinc-200 to-transparent from-50% rounded-md items-center justify-center ${
+                    selectedConversationId === conversation.id
+                      ? "flex"
+                      : "hidden group-hover:flex"
+                  }`}
+                >
                   <Ellipsis
                     size={16}
-                    className="text-zinc-700 hover:text-black cursor-pointer transition-all duration-300"
+                    className={`text-zinc-700 hover:text-black cursor-pointer`}
                   />
                 </div>
               </div>

@@ -12,6 +12,7 @@ type AuthContextType = {
     name: string
   ) => Promise<void>;
   logout: () => Promise<void>;
+  authLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,14 +21,19 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log("Checking authentication. AuthLoading: ", authLoading);
         const userData = await api.getUserInfo();
         setUser(userData);
+        setAuthLoading(false);
+        console.log("Authentication checked. AuthLoading: ", authLoading);
       } catch (error) {
         console.error("Not authenticated", error);
+        setAuthLoading(false);
       }
     };
     checkAuth();
@@ -54,7 +60,9 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, login, register, logout, authLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );
